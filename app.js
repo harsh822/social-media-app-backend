@@ -20,7 +20,7 @@ app.use(express.json());
 app.use(helmet());
 app.use(morgan("common"));
 
-app.use("/api/user", userRoute);
+app.use("/api", userRoute);
 app.use("/api/authenticate", authenticateRoute);
 
 app.listen(8000, () => {
