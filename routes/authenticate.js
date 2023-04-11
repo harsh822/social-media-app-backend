@@ -28,12 +28,16 @@ router.post("/", async (req, res) => {
       JSON.stringify(user),
       process.env.TOKEN_SECRET
     );
+    // const decoded = jwt.verify(accessToken, process.env.TOKEN_SECRET);
+    // // var userId = decoded.id;
+    // console.log("Decoded", decoded);
     if (match) {
-      res.json({ accessToken: accessToken });
+      res.status(200).json({ accessToken: accessToken });
     } else {
-      res.json({ message: "Invalid Credentials" });
+      res.status(403).json({ message: "Invalid Credentials" });
     }
-  } catch (e) {
+  } catch (error) {
+    res.status(500).json(error);
     console.log(e);
   }
 });
