@@ -5,7 +5,6 @@ const helmet = require("helmet");
 const morgan = require("morgan");
 const dotenv = require("dotenv");
 const userRoute = require("./routes/users");
-const authenticateRoute = require("./routes/authenticate");
 
 dotenv.config();
 
@@ -21,7 +20,6 @@ app.use(helmet());
 app.use(morgan("common"));
 
 app.use("/api", userRoute);
-app.use("/api/authenticate", authenticateRoute);
 
 app.listen(8000, () => {
   console.log("Server is running on port 8000");
