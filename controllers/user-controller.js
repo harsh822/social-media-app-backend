@@ -21,13 +21,11 @@ exports.authenticateUser = async (req, res) => {
     }
   } catch (error) {
     res.status(500).json(error);
-    console.log(e);
   }
 };
 
 exports.getUser = async (req, res) => {
   try {
-    console.log("Request", req.userId);
     const user = await User.findById(req.userId);
     const response = {
       username: user.username,
@@ -41,7 +39,6 @@ exports.getUser = async (req, res) => {
 };
 
 exports.followUser = async (req, res) => {
-  console.log("Follow request", req.body);
   if (req.body.userId !== req.params.id) {
     try {
       const userToFollow = await User.findById(req.params.id);
@@ -62,7 +59,6 @@ exports.followUser = async (req, res) => {
 };
 
 exports.unFollowUser = async (req, res) => {
-  console.log("unFollow request", req.params);
   if (req.body.userId !== req.params.id) {
     try {
       const userToUnFollow = await User.findById(req.params.id);
@@ -154,7 +150,6 @@ exports.unlikePost = async (req, res) => {
 
 exports.commentOnPost = async (req, res) => {
   try {
-    console.log(req.params.id);
     const post = await Post.findById(req.params.id);
     if (!post) {
       res.status(404).json("Post Not Found");
