@@ -18,7 +18,7 @@ router.get("/user", authenticate, userController.getUser);
 router.post("/posts", userController.createPost);
 
 // Delete a post
-router.delete("posts/:id", userController.deletePost);
+router.delete("/posts/:id", userController.deletePost);
 
 // Like a Post
 router.put("/like/:id", userController.likePost);

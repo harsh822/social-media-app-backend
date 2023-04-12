@@ -2,7 +2,6 @@ const User = require("../models/User");
 const Post = require("../models/Posts");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const ObjectId = require("bson");
 const dotenv = require("dotenv");
 dotenv.config();
 
@@ -33,7 +32,7 @@ exports.getUser = async (req, res) => {
     const response = {
       username: user.username,
       numberOfFollowers: user.followers.length,
-      numberOfFollowings: user.followings.length,
+      Followings: user.followings,
     };
     res.status(200).json(response);
   } catch (error) {
@@ -42,8 +41,8 @@ exports.getUser = async (req, res) => {
 };
 
 exports.followUser = async (req, res) => {
-  //   console.log("Follow request", req);
-  if (req.body.id !== req.params.id) {
+  console.log("Follow request", req.body);
+  if (req.body.userId !== req.params.id) {
     try {
       const userToFollow = await User.findById(req.params.id);
       const currUser = await User.findById(req.body.userId);
@@ -54,7 +53,9 @@ exports.followUser = async (req, res) => {
       } else {
         res.status(400).json("Already followed");
       }
-    } catch (error) {}
+    } catch (error) {
+      res.status(500).json(error);
+    }
   } else {
     res.status(400).json("You can not follow yourself");
   }
@@ -62,7 +63,7 @@ exports.followUser = async (req, res) => {
 
 exports.unFollowUser = async (req, res) => {
   console.log("unFollow request", req.params);
-  if (req.body.id !== req.params.id) {
+  if (req.body.userId !== req.params.id) {
     try {
       const userToUnFollow = await User.findById(req.params.id);
       const currUser = await User.findById(req.body.userId);
@@ -75,9 +76,11 @@ exports.unFollowUser = async (req, res) => {
       } else {
         res.status(400).json("Already unFollowed");
       }
-    } catch (error) {}
+    } catch (error) {
+      res.status(500).json(error);
+    }
   } else {
-    res.status(400).json("You can not follow yourself");
+    res.status(400).json("You can not unfollow yourself");
   }
 };
 
@@ -100,7 +103,9 @@ exports.createPost = async (req, res) => {
 exports.deletePost = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
-    if (post.userId === req.body.userId) {
+    if (!post) {
+      res.status(404).json("Post Not Found");
+    } else if (post.userId === req.body.userId) {
       await post.deleteOne();
       res.status(200).json("Post is Deleted");
     } else {
@@ -114,7 +119,11 @@ exports.deletePost = async (req, res) => {
 exports.likePost = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
-    if (!post.likes.includes(req.body.userId)) {
+    if (!post) {
+      res.status(404).json("Post Not Found");
+    } else if (post.userId !== req.body.userId) {
+      res.status(404).json("User Not Found");
+    } else if (!post.likes.includes(req.body.userId)) {
       await post.updateOne({ $push: { likes: req.body.userId } });
       res.status(200).json("Post Liked");
     } else {
@@ -128,7 +137,11 @@ exports.likePost = async (req, res) => {
 exports.unlikePost = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
-    if (post.likes.includes(req.body.userId)) {
+    if (!post) {
+      res.status(404).json("Post Not Found");
+    } else if (post.userId !== req.body.userId) {
+      res.status(404).json("User Not Found");
+    } else if (post.likes.includes(req.body.userId)) {
       await post.updateOne({ $pull: { likes: req.body.userId } });
       res.status(200).json("Post unLiked");
     } else {
@@ -143,22 +156,22 @@ exports.commentOnPost = async (req, res) => {
   try {
     console.log(req.params.id);
     const post = await Post.findById(req.params.id);
-    // console.log("POst", new ObjectId("sdsds"));
-    const newComment = {
-      commentID: new Date().valueOf(),
-      comment: req.body.comment,
-    };
-    console.log("New comment", newComment);
-    const uniqueCommentId = generateUniqueCommentId();
-    await post.updateOne({
-      $push: {
-        comments: {
-          commentID: uniqueCommentId,
-          comment: req.body.comment,
+    if (!post) {
+      res.status(404).json("Post Not Found");
+    } else if (post.userId !== req.body.userId) {
+      res.status(404).json("User Not Found");
+    } else {
+      const uniqueCommentId = generateUniqueCommentId();
+      await post.updateOne({
+        $push: {
+          comments: {
+            commentID: uniqueCommentId,
+            comment: req.body.comment,
+          },
         },
-      },
-    });
-    res.status(200).json({ commentID: newComment.commentID });
+      });
+      res.status(200).json({ commentID: uniqueCommentId });
+    }
   } catch (error) {
     res.status(500).json(error);
   }
@@ -167,7 +180,11 @@ exports.commentOnPost = async (req, res) => {
 exports.getPost = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
-    res.status(200).json(post);
+    if (!post) {
+      res.status(404).json("Post Not Found");
+    } else {
+      res.status(200).json(post);
+    }
   } catch (error) {
     res.status(500).json(error);
   }
