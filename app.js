@@ -17,10 +17,10 @@ mongoose.connect(process.env.MONGO_URL, { useNewUrlParser: true }).then(() => {
 // Middlewares
 app.use(express.json());
 app.use(helmet());
-app.use(morgan("common"));
+// app.use(morgan("common"));
 
 app.use("/api", userRoute);
 
-app.listen(8000, () => {
+module.exports = app.listen(8000, () => {
   console.log("Server is running on port 8000");
 });
